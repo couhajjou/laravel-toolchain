@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Changing default string lenghts in 'app/Providers/AppServiceProvider.php' ..."
+# For more info, check comments in fix-string.AppServiceProvider.php
+cp tc/fixtures/fix-string.AppServiceProvider.php app/Providers/AppServiceProvider.php

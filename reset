@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Load all the local environment variables
+source .env
+
+# alias
+MYSQL='mysql -uroot -proot -e'
+
+echo "Dropping database '$DB_DATABASE'... "
+$MYSQL "DROP DATABASE IF EXISTS \`$DB_DATABASE\`;"
+$MYSQL "SHOW DATABASES;"
+
+echo "Creating fresh database '$DB_DATABASE'... "
+$MYSQL "CREATE DATABASE \`$DB_DATABASE\` DEFAULT CHARACTER SET = \`utf8mb4\`;"
+$MYSQL "SHOW DATABASES;"
+
+echo "Dropping user '$DB_USERNAME'... "
+$MYSQL "DROP USER '$DB_USERNAME'@'localhost'";
+$MYSQL "SELECT User FROM mysql.user ORDER BY user;"
+
+echo "Creating fresh user '$DB_USERNAME'... "
+$MYSQL "CREATE USER '$DB_USERNAME'@'localhost' IDENTIFIED BY '$DB_USERNAME'";
+$MYSQL "GRANT CREATE ROUTINE, CREATE VIEW, ALTER, SHOW VIEW, CREATE, ALTER ROUTINE, EVENT, INSERT, SELECT, DELETE, TRIGGER, GRANT OPTION, REFERENCES, UPDATE, DROP, EXECUTE, LOCK TABLES, CREATE TEMPORARY TABLES, INDEX ON \`$DB_DATABASE\`.* TO '$DB_USERNAME'@'localhost'";
+
+echo "Setting the password ..."
+$MYSQL "SET PASSWORD FOR '$DB_USERNAME'@'localhost' = PASSWORD('$DB_PASSWORD');"
+$MYSQL "SELECT User FROM mysql.user ORDER BY user;"
+
+echo "Migrating ..."
+php artisan migrate
+

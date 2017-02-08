@@ -1,0 +1,5 @@
+#!/bin/bash
+
+composer dumpautoload
+php -S 0.0.0.0:7777 -t ./public
+
