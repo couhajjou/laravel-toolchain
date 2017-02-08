@@ -1,31 +1,47 @@
 #!/bin/bash
 
-# Load all the local environment variables
+## Load all the local environment variables
 source .env
 
-# alias
-MYSQL='mysql -uroot -proot -e'
+## Set up colors, kudos to tightenco for his lambo script
+red=`tput setaf 1`
+green=`tput setaf 2`
+orange=`tput setaf 3`
+reset=`tput sgr0`
 
-echo "Dropping database '$DB_DATABASE'... "
-$MYSQL "DROP DATABASE IF EXISTS \`$DB_DATABASE\`;"
-$MYSQL "SHOW DATABASES;"
+resetdb() 
+{
+    ## alias
+    MYSQL='mysql -uroot -proot -e'
 
-echo "Creating fresh database '$DB_DATABASE'... "
-$MYSQL "CREATE DATABASE \`$DB_DATABASE\` DEFAULT CHARACTER SET = \`utf8mb4\`;"
-$MYSQL "SHOW DATABASES;"
+    echo "${green}Dropping database '$DB_DATABASE'...${reset}"
+    $MYSQL "DROP DATABASE IF EXISTS \`$DB_DATABASE\`"
+    $MYSQL "SHOW DATABASES"
 
-echo "Dropping user '$DB_USERNAME'... "
-$MYSQL "DROP USER '$DB_USERNAME'@'localhost'";
-$MYSQL "SELECT User FROM mysql.user ORDER BY user;"
+    echo "${green}Creating fresh database '$DB_DATABASE'...${reset}"
+    $MYSQL "CREATE DATABASE \`$DB_DATABASE\` DEFAULT CHARACTER SET = \`utf8mb4\`"
+    $MYSQL "SHOW DATABASES"
 
-echo "Creating fresh user '$DB_USERNAME'... "
-$MYSQL "CREATE USER '$DB_USERNAME'@'localhost' IDENTIFIED BY '$DB_USERNAME'";
-$MYSQL "GRANT CREATE ROUTINE, CREATE VIEW, ALTER, SHOW VIEW, CREATE, ALTER ROUTINE, EVENT, INSERT, SELECT, DELETE, TRIGGER, GRANT OPTION, REFERENCES, UPDATE, DROP, EXECUTE, LOCK TABLES, CREATE TEMPORARY TABLES, INDEX ON \`$DB_DATABASE\`.* TO '$DB_USERNAME'@'localhost'";
+    echo "${green}Dropping user '$DB_USERNAME'...${reset}"
+    $MYSQL "DROP USER '$DB_USERNAME'@'localhost'"
+    $MYSQL "SELECT User FROM mysql.user ORDER BY user"
 
-echo "Setting the password ..."
-$MYSQL "SET PASSWORD FOR '$DB_USERNAME'@'localhost' = PASSWORD('$DB_PASSWORD');"
-$MYSQL "SELECT User FROM mysql.user ORDER BY user;"
+    echo "${green}Creating fresh user '$DB_USERNAME'...${reset}"
+    $MYSQL "CREATE USER '$DB_USERNAME'@'localhost' IDENTIFIED BY '$DB_USERNAME'"
+    $MYSQL "GRANT CREATE ROUTINE, CREATE VIEW, ALTER, SHOW VIEW, CREATE, ALTER ROUTINE, EVENT, INSERT, SELECT, DELETE, TRIGGER, GRANT OPTION, REFERENCES, UPDATE, DROP, EXECUTE, LOCK TABLES, CREATE TEMPORARY TABLES, INDEX ON \`$DB_DATABASE\`.* TO '$DB_USERNAME'@'localhost'"
 
-echo "Migrating ..."
-php artisan migrate
+    echo "${green}Setting the password ...${reset}"
+    $MYSQL "SET PASSWORD FOR '$DB_USERNAME'@'localhost' = PASSWORD('$DB_PASSWORD')"
+    $MYSQL "SELECT User FROM mysql.user ORDER BY user"
+
+    echo "${green}Migrating ...${reset}"
+    php artisan migrate
+}
+
+resetdb 2>reset.log
+
+## print errors and warning
+echo "${red}Warnings: ${reset}"
+cat reset.log
+rm reset.log
 
